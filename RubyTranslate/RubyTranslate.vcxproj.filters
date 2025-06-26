@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Body.cpp">
+      <Filter>Body</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Main</Filter>
+    </ClCompile>
+    <ClCompile Include="Parser.cpp">
+      <Filter>Parser</Filter>
+    </ClCompile>
+    <ClCompile Include="TextBox.cpp">
+      <Filter>TextBox</Filter>
+    </ClCompile>
+    <ClCompile Include="WritreBox.cpp">
+      <Filter>WriteBox</Filter>
+    </ClCompile>
+    <ClCompile Include="Box.cpp">
+      <Filter>Box</Filter>
+    </ClCompile>
+    <ClCompile Include="InfoBox.cpp">
+      <Filter>InfoBox</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Body">
+      <UniqueIdentifier>{4079220e-a4cc-40ea-88c3-6c52dee9f59c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Main">
+      <UniqueIdentifier>{e0c5dfce-f463-4740-bfc9-29a150da901d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Parser">
+      <UniqueIdentifier>{f035fb35-7e5c-4433-851c-3052e7fb7214}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TextBox">
+      <UniqueIdentifier>{da9fbbb6-0288-403c-9101-d182ce81b3fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="WriteBox">
+      <UniqueIdentifier>{092d87a0-db75-4080-9145-bc65b150528a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Box">
+      <UniqueIdentifier>{3eb0e600-645b-4d2d-9c21-2493bd1cd46e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="InfoBox">
+      <UniqueIdentifier>{e533e844-9d1d-4087-95c2-b65ed0526e26}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Body.h">
+      <Filter>Body</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Main</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser.h">
+      <Filter>Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="TextBox.h">
+      <Filter>TextBox</Filter>
+    </ClInclude>
+    <ClInclude Include="WritreBox.h">
+      <Filter>WriteBox</Filter>
+    </ClInclude>
+    <ClInclude Include="Box.h">
+      <Filter>Box</Filter>
+    </ClInclude>
+    <ClInclude Include="InfoBox.h">
+      <Filter>InfoBox</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Data\icon.ico">
+      <Filter>Main</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="RubyTranslate.rc">
+      <Filter>Main</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>
