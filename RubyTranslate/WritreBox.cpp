@@ -57,6 +57,12 @@ void WritreBox::event(sf::Event& event)
         if (event.key.code == sf::Keyboard::F4)
             writingText += L"{PLAYER}";
 
+        if (event.key.code == sf::Keyboard::F5)
+            writingText += L"{STR_VAR_1}";
+
+        if (event.key.code == sf::Keyboard::F6)
+            writingText += L"{STR_VAR_2}";
+
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) || sf::Keyboard::isKeyPressed(sf::Keyboard::RControl))
         {
             if (event.key.code == sf::Keyboard::V)

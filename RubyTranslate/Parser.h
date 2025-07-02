@@ -141,6 +141,9 @@ public:
     void ReplaceAndCopyFile(const std::wstring& inputPath, const std::wstring& outputPath, sf::RenderWindow& window);
 
 
+    void preTranslate(const wstring& string);
+
+
 	void start();
 
 	void update();

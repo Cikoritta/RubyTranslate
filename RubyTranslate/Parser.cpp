@@ -26,7 +26,10 @@ wstring Parser::openFile()
 
         wstring currentStr = currentFile.substr(currentFile.find(L".") + 1U);
 
-        if (currentStr == L"inc")
+
+		std::wcout << L"Выбранный файл: " << currentStr << std::endl;
+
+        if ((currentStr == L"inc") || currentStr == L"s")
         {
             mode = 1U;
         }
@@ -100,7 +103,9 @@ void Parser::parsing(const std::wstring& path)
         size_t firstNonSpace = line.find_first_not_of(L" \t");
         std::wstring trimmed = (firstNonSpace == std::wstring::npos) ? L"" : line.substr(firstNonSpace);
 
-        if (!trimmed.empty() && (trimmed.find(L":: @") != std::wstring::npos || trimmed.find(L": @") != std::wstring::npos))
+        if (!trimmed.empty() &&
+            (trimmed.find(L"::") != std::wstring::npos ||
+                (trimmed.find(L":") != std::wstring::npos && trimmed.find(L".string") == std::wstring::npos)))
         {
             if (!currentBlock.empty())
             {
@@ -237,8 +242,6 @@ void Parser::ParsePlaceholders(const std::wstring& filePath)
         auto posValueStart = line.find(L"_(", posNameEnd);
         if (posValueStart == std::wstring::npos)
             continue;
-        posValueStart += 2;
-
         posValueStart = line.find(L"\"", posValueStart);
         if (posValueStart == std::wstring::npos)
             continue;
@@ -250,9 +253,36 @@ void Parser::ParsePlaceholders(const std::wstring& filePath)
 
         std::wstring value = line.substr(posValueStart, posValueEnd - posValueStart);
 
+        // Замена \n на символ перевода строки
+        size_t pos = 0;
+        while ((pos = value.find(L"\\n", pos)) != std::wstring::npos)
+        {
+            value.replace(pos, 2, L"\n");
+            ++pos;
+        }
+
+        // Добавляем перенос после \p
+        pos = 0;
+        while ((pos = value.find(L"\\p", pos)) != std::wstring::npos)
+        {
+            value.insert(pos + 2, L"\n");
+            pos += 3;
+        }
+
+        // Добавляем перенос после $
+        pos = 0;
+        while ((pos = value.find(L"$", pos)) != std::wstring::npos)
+        {
+            value.insert(pos + 1, L"\n");
+            pos += 2;
+        }
+
         pharsersStrings.emplace_back(key, value);
     }
 }
+
+
+
 
 
 void Parser::replaceAndTransliterate(const std::wstring& inputPath, const std::wstring& outputPath, sf::RenderWindow& window)
@@ -260,94 +290,82 @@ void Parser::replaceAndTransliterate(const std::wstring& inputPath, const std::w
     window.setTitle(L"Ruby Translator | PARSING FILE: " + inputPath);
 
     std::wifstream infile(inputPath);
-
     std::wofstream outfile(outputPath);
 
-
     std::locale utf8_locale(std::locale(), new std::codecvt_utf8<wchar_t>);
-
     infile.imbue(utf8_locale);
-
     outfile.imbue(utf8_locale);
 
-
-    if (!infile.is_open() || !outfile.is_open()) 
+    if (!infile.is_open() || !outfile.is_open())
     {
         std::wcerr << L"Не удалось открыть файл!" << std::endl;
-
         return;
     }
 
     std::wstring line;
-
     bool inBlock = false;
-
-
     size_t blockIndex = 0;
-
     size_t phraseIndex = 0;
 
-    while (std::getline(infile, line)) 
+    while (std::getline(infile, line))
     {
         size_t firstNonSpace = line.find_first_not_of(L" \t");
-
         std::wstring trimmed = (firstNonSpace == std::wstring::npos) ? L"" : line.substr(firstNonSpace);
 
-        if (!trimmed.empty() && (trimmed.find(L":: @") != std::wstring::npos || trimmed.find(L": @") != std::wstring::npos)) 
+        if (!trimmed.empty() &&
+            ((trimmed.find(L"::") != std::wstring::npos || trimmed.find(L":") != std::wstring::npos) &&
+                (trimmed.find(L".string") == std::wstring::npos)))
         {
             inBlock = true;
-
             outfile << line << L"\n";
 
             if (blockIndex < translate.size())
-            {
                 phraseIndex = 0;
-            }
 
             continue;
         }
 
-        if (inBlock && trimmed.find(L".string") != std::wstring::npos) 
+        if (inBlock && trimmed.find(L".string") != std::wstring::npos)
         {
             if (blockIndex < translate.size() && phraseIndex < translate[blockIndex].size())
             {
                 std::wstring newText = translate[blockIndex][phraseIndex++];
-
                 std::wstring currentLine;
 
-                for (size_t i = 0; i < newText.size(); ++i) 
+                for (size_t i = 0; i < newText.size(); ++i)
                 {
                     wchar_t ch = newText[i];
-
                     auto it = rus_to_jpn.find(ch);
-
                     wchar_t outCh = (it != rus_to_jpn.end()) ? it->second : ch;
 
-                    if (outCh == L'\n') 
+                    if (outCh == L'\n')
                     {
                         outfile << L"  .string \"" << currentLine << L"\\n\"\n";
                         currentLine.clear();
                     }
-                    else 
+                    else
                     {
                         currentLine += outCh;
                     }
                 }
-                if (!currentLine.empty()) 
+
+                if (!currentLine.empty())
                 {
                     outfile << L"  .string \"" << currentLine << L"\"\n";
                 }
+            }
+            else
+            {
+                outfile << line << L"\n";
             }
 
             continue;
         }
 
-        if (trimmed.empty()) 
+        if (trimmed.empty())
         {
-            if (inBlock) 
-            {
+            if (inBlock)
                 blockIndex++;
-            }
 
             inBlock = false;
         }
@@ -356,11 +374,10 @@ void Parser::replaceAndTransliterate(const std::wstring& inputPath, const std::w
     }
 
     infile.close();
-
     outfile.close();
-
     window.setTitle(L"Ruby Translator");
 }
+
 
 void Parser::ReplaceAndCopyFile(const std::wstring& inputPath, const std::wstring& outputPath, sf::RenderWindow& window)
 {
@@ -418,6 +435,30 @@ void Parser::ReplaceAndCopyFile(const std::wstring& inputPath, const std::wstrin
                                         newValue += ch;
                                 }
 
+                                // Убираем \n после \p
+                                size_t pos = 0;
+                                while ((pos = newValue.find(L"\\p\n", pos)) != std::wstring::npos)
+                                {
+                                    newValue.replace(pos, 3, L"\\p");
+                                    pos += 2;
+                                }
+
+                                // Убираем \n после $
+                                pos = 0;
+                                while ((pos = newValue.find(L"$\n", pos)) != std::wstring::npos)
+                                {
+                                    newValue.replace(pos, 2, L"$");
+                                    pos += 1;
+                                }
+
+                                // Заменяем \n на \\n
+                                pos = 0;
+                                while ((pos = newValue.find(L"\n", pos)) != std::wstring::npos)
+                                {
+                                    newValue.replace(pos, 1, L"\\n");
+                                    pos += 2;
+                                }
+
                                 line.replace(posValueStart, posValueEnd - posValueStart, newValue);
                             }
                         }
@@ -433,6 +474,15 @@ void Parser::ReplaceAndCopyFile(const std::wstring& inputPath, const std::wstrin
     outputFile.close();
 
     window.setTitle(L"Ruby Translator");
+}
+
+
+
+
+
+void Parser::preTranslate(const wstring& string)
+{
+
 }
 
 
@@ -504,6 +554,8 @@ void Parser::events(sf::Event& event, sf::RenderWindow& window)
             }
 
             originalTextBox.setString(writeBox.getString());
+
+            sf::Clipboard::setString(writeBox.getString());
 		}
 
         if (event.key.code == sf::Keyboard::F10)
@@ -523,6 +575,11 @@ void Parser::events(sf::Event& event, sf::RenderWindow& window)
             writeBox.setString(L"");
 
             isSearch = true;
+        }
+
+        if (event.key.code == sf::Keyboard::F12)
+        {
+			window.setSize(sf::Vector2u(800U, 600U));
         }
 
         if (event.key.code == sf::Keyboard::Enter && isSearch)
@@ -588,6 +645,8 @@ void Parser::events(sf::Event& event, sf::RenderWindow& window)
                     originalTextBox.setString(writeBox.getString());
                 }
             }
+
+			sf::Clipboard::setString(writeBox.getString());
         }
 
         if (event.key.code == sf::Keyboard::Left)
@@ -622,6 +681,8 @@ void Parser::events(sf::Event& event, sf::RenderWindow& window)
                     originalTextBox.setString(writeBox.getString());
                 }
             }
+
+            sf::Clipboard::setString(writeBox.getString());
         }
 
 
@@ -666,6 +727,8 @@ void Parser::events(sf::Event& event, sf::RenderWindow& window)
                     originalTextBox.setString(writeBox.getString());
                 }
             }
+
+            sf::Clipboard::setString(writeBox.getString());
         }
 	}
 }

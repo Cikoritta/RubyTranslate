@@ -2,7 +2,7 @@
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode(800U, 600U), "Ruby Translator", sf::Style::Close);
+    sf::RenderWindow window(sf::VideoMode(800U, 600U), "Ruby Translator", sf::Style::Default);
 
 
 	window.setFramerateLimit(30U);
@@ -26,6 +26,9 @@ int main()
 		{
 			if (event.type == sf::Event::Closed)
 				window.close();
+
+			if (event.type == sf::Event::Resized)
+				window.setView(sf::View(sf::FloatRect(0.0f, 0.0f, static_cast<float>(event.size.width), static_cast<float>(event.size.height))));
 
 
 			rubyTranslator.events(event, window);
